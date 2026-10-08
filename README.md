@@ -1,22 +1,42 @@
 # Gala Music Player
 
-Gala Music Player is a native, lightweight, and ultra-robust Apple Music client designed specifically for Linux. It securely wraps the official Apple Music web player, bringing deep desktop integration without compromising audio quality, performance, or security.
+An ultra-robust, native Apple Music client for Linux powered by CastLabs Electron.
 
-## Features
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Platform: Linux](https://img.shields.io/badge/Platform-Linux-orange.svg)](#)
+[![DRM: Widevine EVS](https://img.shields.io/badge/DRM-Widevine%20EVS-green.svg)](#)
 
-- 🎧 **Untouched Audio:** Directly utilizes Apple's web player through CastLabs Electron, ensuring fully functioning Widevine DRM on Linux. No artificial equalizers, Web Audio API tampering, or resampling.
-- 🐧 **Native Linux Integration:** Full MPRIS support via D-Bus. Control your music from your lock screen, hardware media keys, or sound applets.
-- 🛡️ **Unbreakable Design:** Gala extracts data directly from official internal APIs rather than scraping fragile HTML/CSS, meaning the app will not break when Apple updates their user interface.
-- ⬇️ **Background Playback:** A minimal system tray ensures your music never stops when you clear your workspace.
+---
 
-## Why Gala?
+## Highlights
 
-Most third-party Apple Music clients suffer from bloat, fragile CSS theme injections that break constantly, or custom audio engines that degrade stream quality and crash on Linux due to DRM issues. 
+- 🎧 **Untouched Lossless Audio:** Directly streams Apple Music through CastLabs Electron with production-signed Widevine CDM support. No audio stream interception, no custom Web Audio filters, and no playback errors.
+- 🐧 **Native Linux Integration:** Full MPRIS v2 compliance (`org.mpris.MediaPlayer2.gala`). Seamlessly integrates with GNOME Shell, KDE Plasma, Hyprland, `playerctl`, and desktop lock screens.
+- 🛡️ **Hardened & Secure:** Features automatic Single Sign-On (SSO) session destruction on sign-out, strict `contextIsolation`, and zero third-party telemetry.
+- ⚡ **Single Authoritative Player:** Disables Chromium's generic media session to eliminate duplicate notifications in desktop trays.
+- ⬇️ **Background Playback:** Runs smoothly in the background when closed to tray without audio interruptions or tab throttling.
+- 🖱️ **Dock Quick Actions:** Right-click the application icon in your desktop dock to quickly trigger Play/Pause, Next Track, and Previous Track.
 
-Gala takes a fundamentally different, hardened approach: **Wrap `music.apple.com` directly, stay out of the way, and let the native media subsystem do the heavy lifting.** There are no custom themes or "gamer" integrations—just pure, stable, performant music playback.
+---
 
-## Development & Packaging
+## Documentation (SDLC Standards)
 
+For detailed technical and architectural specifications, consult our documentation:
+
+- 📐 **[System Architecture](docs/ARCHITECTURE.md)**: Deep dive into process isolation, Widevine CDM initialization, shared memory management, and D-Bus specifications.
+- 🔒 **[Security Policy](docs/SECURITY.md)**: Authentication lifecycle, SSO cookie destruction, IPC bridge security, and sandbox integrity.
+- 🧪 **[Testing & Verification Guide](docs/TESTING.md)**: Step-by-step procedures for DRM validation, `playerctl` D-Bus tests, and automated checks.
+
+---
+
+## Getting Started
+
+### Prerequisites
+- Node.js (v18+)
+- npm
+- Linux Desktop Environment (GNOME, KDE Plasma, XFCE, Sway, Hyprland, etc.)
+
+### Installation & Development
 ```bash
 # Clone the repository
 git clone https://github.com/yourusername/gala-music-player.git
@@ -25,26 +45,40 @@ cd gala-music-player
 # Install dependencies
 npm install
 
-# Start the application in development mode
+# Launch Gala in development mode
 npm start
-
-# Build Linux packages (.AppImage, .deb)
-npm run dist
 ```
 
-## Linux Desktop Features
+### Packaging for Linux
+Generate standalone `.AppImage` and `.deb` distribution packages:
+```bash
+npm run dist
+```
+The packaged binaries will be output to the `dist/` directory.
 
-- **MPRIS Integration:** Full support for `org.mpris.MediaPlayer2.gala`.
-- **Dock Quick Actions:** Right-click the app icon in GNOME / KDE dash to trigger Play/Pause, Next, and Previous directly.
-- **Hardware Media Keys:** Bindings for physical Play/Pause, Next, and Previous keys.
-- **Persistent Sessions:** Apple ID credentials and login state persist across system reboots.
+---
 
-## Architecture Overview
+## CLI Media Control (`playerctl`)
 
-*   **Engine:** CastLabs Electron (`@castlabs/electron-releases`) for Verified Media Path (VMP) DRM.
-*   **Integration:** `mpris-service` for D-Bus communication.
-*   **Frontend:** A minimal, highly secure JavaScript injection (`hook.js`) bridging the gap between Apple's official APIs and Node.js.
+Because Gala implements the standard MPRIS v2 specification under the static bus name `gala`, you can easily script or bind it to custom hotkeys:
+
+```bash
+# Toggle Playback
+playerctl --player=gala play-pause
+
+# Skip Track
+playerctl --player=gala next
+
+# Previous Track
+playerctl --player=gala previous
+
+# View Current Track Metadata
+playerctl --player=gala metadata
+```
+
+---
 
 ## License
 
-MIT License
+This project is licensed under the [MIT License](LICENSE).
+Apple Music is a trademark of Apple Inc. Gala is an independent open-source project and is not affiliated with or endorsed by Apple Inc.
