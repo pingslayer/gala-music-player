@@ -7,6 +7,8 @@ const MprisManager = require('./mpris');
 // Critical on Fedora/Linux to prevent /dev/shm shared memory crashes
 app.commandLine.appendSwitch('disable-dev-shm-usage');
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+// Disable Chromium's internal Linux MPRIS/MediaKeys to prevent duplicate notifications in GNOME/Fedora
+app.commandLine.appendSwitch('disable-features', 'HardwareMediaKeyHandling,MediaSessionService');
 
 let mainWindow = null;
 let mprisManager = null;
