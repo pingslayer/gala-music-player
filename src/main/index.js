@@ -61,6 +61,25 @@ function createWindow() {
     }
   });
 
+  // Secure Sign-Out Interceptor:
+  // When the user clicks "Sign Out" in the Apple Music web UI, the frontend sends a logout API request.
+  // We intercept that request to securely nuke the entire Electron session (cookies, local storage, etc.)
+  // and reload the page, ensuring no SSO cookies are left behind.
+  const { session } = require('electron');
+  session.defaultSession.webRequest.onCompleted(
+    { urls: ['*://*.apple.com/*logout*', '*://*.apple.com/*signout*'] },
+    async (details) => {
+      console.log(`[Security] Apple Music sign-out detected via ${details.url}`);
+      await session.defaultSession.clearStorageData({
+        storages: ['appcache', 'cookies', 'filesystem', 'indexdb', 'localstorage', 'shadercache', 'websql', 'serviceworkers', 'cachestorage']
+      });
+      console.log('[Security] Session storage and SSO cookies securely destroyed.');
+      if (mainWindow) {
+        mainWindow.loadURL('https://music.apple.com');
+      }
+    }
+  );
+
   // Ensure Apple ID login iframe has high-contrast readable text on Linux
   mainWindow.webContents.on('did-frame-finish-load', (_event, isMainFrame, frameProcessId, frameRoutingId) => {
     const authCssPath = path.join(__dirname, '../preload/authStyleFix.css');
@@ -69,6 +88,7 @@ function createWindow() {
       mainWindow.webContents.insertCSS(authCss).catch(() => {});
     }
   });
+
 
   // Load official Apple Music web player
   mainWindow.loadURL('https://music.apple.com');
@@ -102,6 +122,20 @@ function createTray() {
           }
         },
         {
+          label: 'Sign Out & Clear Session',
+          click: async () => {
+            if (mainWindow) {
+              const { session } = require('electron');
+              await session.defaultSession.clearStorageData({
+                storages: ['appcache', 'cookies', 'filesystem', 'indexdb', 'localstorage', 'shadercache', 'websql', 'serviceworkers', 'cachestorage']
+              });
+              mainWindow.loadURL('https://music.apple.com');
+              mainWindow.show();
+            }
+          }
+        },
+        { type: 'separator' },
+        {
           label: 'Quit',
           click: () => {
             isQuitting = true;
@@ -121,6 +155,7 @@ function createTray() {
     console.warn('[Tray] Tray icon could not be created:', err.message);
   }
 }
+
 
 // IPC Handlers: forward web player updates to MPRIS
 ipcMain.on('gala:track-update', (_event, metadata) => {
