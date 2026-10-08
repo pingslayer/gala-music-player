@@ -39,7 +39,7 @@ For detailed technical and architectural specifications, consult our documentati
 ### Installation & Development
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/gala-music-player.git
+git clone https://github.com/pingslayer/gala-music-player.git
 cd gala-music-player
 
 # Install dependencies

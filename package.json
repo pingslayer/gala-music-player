@@ -4,6 +4,11 @@
   "description": "An ultra-robust, native Apple Music client for Linux powered by CastLabs Electron.",
   "main": "src/main/index.js",
   "author": "Ronald",
+  "homepage": "https://github.com/pingslayer/gala-music-player",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pingslayer/gala-music-player.git"
+  },
   "scripts": {
     "start": "electron .",
     "dev": "electron .",
