@@ -1,11 +1,11 @@
-const { app, BrowserWindow, ipcMain, globalShortcut, Menu, Tray } = require('electron');
+const { app, BrowserWindow, components, ipcMain, globalShortcut, Menu, Tray } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const MprisManager = require('./mpris');
 
-// 1. Configure Widevine DRM & Media acceleration switches for CastLabs Electron
-app.commandLine.appendSwitch('no-sandbox');
-app.commandLine.appendSwitch('enable-features', 'Widevine');
+// 1. Configure Linux shared memory & media flags
+// Critical on Fedora/Linux to prevent /dev/shm shared memory crashes
+app.commandLine.appendSwitch('disable-dev-shm-usage');
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 
 let mainWindow = null;
@@ -20,7 +20,8 @@ function createWindow() {
     minWidth: 800,
     minHeight: 600,
     title: 'Gala Music Player',
-    backgroundColor: '#000000',
+    backgroundColor: '#121212',
+    show: false, // Show when ready to prevent white/blank flicker
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -30,16 +31,26 @@ function createWindow() {
     }
   });
 
-  // Remove default menu bar for clean app appearance
   mainWindow.setMenuBarVisibility(false);
 
   // Initialize Linux MPRIS service
   mprisManager = new MprisManager(mainWindow);
 
-  // Load official Apple Music web player
-  mainWindow.loadURL('https://music.apple.com');
+  // Show window once content is ready to prevent blank screen
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
+  });
 
-  // Inject the Gala hook script when navigation succeeds
+  // Diagnostics and error handlers
+  mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
+    console.error(`[Navigation Error] Failed to load ${validatedURL}: ${errorDescription} (${errorCode})`);
+  });
+
+  mainWindow.webContents.on('render-process-gone', (_event, details) => {
+    console.error(`[Process Error] Renderer process gone: reason=${details.reason}, exitCode=${details.exitCode}`);
+  });
+
+  // Inject hook script when page finishes loading
   mainWindow.webContents.on('did-finish-load', () => {
     const hookPath = path.join(__dirname, '../preload/hook.js');
     if (fs.existsSync(hookPath)) {
@@ -50,7 +61,10 @@ function createWindow() {
     }
   });
 
-  // Handle Close-to-Tray (hide window instead of quitting to keep playback uninterrupted)
+  // Load official Apple Music web player
+  mainWindow.loadURL('https://music.apple.com');
+
+  // Handle Close-to-Tray
   mainWindow.on('close', (event) => {
     if (!isQuitting) {
       event.preventDefault();
@@ -64,8 +78,6 @@ function createWindow() {
 }
 
 function createTray() {
-  // Use a fallback or create a minimal tray icon if icon asset exists
-  // For now, allow simple toggle if system tray is supported
   try {
     const iconPath = path.join(__dirname, '../../assets/icon.png');
     if (fs.existsSync(iconPath)) {
@@ -121,7 +133,17 @@ ipcMain.on('gala:position-update', (_event, position) => {
 });
 
 // App lifecycle
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  // Ensure CastLabs Widevine CDM component is ready
+  if (components && typeof components.whenReady === 'function') {
+    try {
+      await components.whenReady();
+      console.log('[DRM] CastLabs Widevine CDM initialized.');
+    } catch (cdmErr) {
+      console.warn('[DRM] Widevine CDM initialization warning:', cdmErr.message);
+    }
+  }
+
   createWindow();
   createTray();
 
