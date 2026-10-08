@@ -80,14 +80,6 @@ function createWindow() {
     }
   );
 
-  // Ensure Apple ID login iframe has high-contrast readable text on Linux
-  mainWindow.webContents.on('did-frame-finish-load', (_event, isMainFrame, frameProcessId, frameRoutingId) => {
-    const authCssPath = path.join(__dirname, '../preload/authStyleFix.css');
-    if (fs.existsSync(authCssPath)) {
-      const authCss = fs.readFileSync(authCssPath, 'utf8');
-      mainWindow.webContents.insertCSS(authCss).catch(() => {});
-    }
-  });
 
 
   // Load official Apple Music web player
