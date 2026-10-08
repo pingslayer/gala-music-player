@@ -15,11 +15,7 @@ Most third-party Apple Music clients suffer from bloat, fragile CSS theme inject
 
 Gala takes a fundamentally different, hardened approach: **Wrap `music.apple.com` directly, stay out of the way, and let the native media subsystem do the heavy lifting.** There are no custom themes or "gamer" integrations—just pure, stable, performant music playback.
 
-## Development Setup
-
-Requirements:
-- Node.js (v18+)
-- npm
+## Development & Packaging
 
 ```bash
 # Clone the repository
@@ -30,8 +26,18 @@ cd gala-music-player
 npm install
 
 # Start the application in development mode
-npm run dev
+npm start
+
+# Build Linux packages (.AppImage, .deb)
+npm run dist
 ```
+
+## Linux Desktop Features
+
+- **MPRIS Integration:** Full support for `org.mpris.MediaPlayer2.gala`.
+- **Dock Quick Actions:** Right-click the app icon in GNOME / KDE dash to trigger Play/Pause, Next, and Previous directly.
+- **Hardware Media Keys:** Bindings for physical Play/Pause, Next, and Previous keys.
+- **Persistent Sessions:** Apple ID credentials and login state persist across system reboots.
 
 ## Architecture Overview
 
