@@ -1,0 +1,26 @@
+/* Ensure high contrast and readability for Apple ID authentication frames on Linux */
+body, input, label, p, span, div {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+}
+
+/* Ensure inputs and labels are always high-contrast and fully visible */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="tel"] {
+  color: #111111 !important;
+  background-color: #ffffff !important;
+  border: 1px solid #cccccc !important;
+}
+
+/* Hide confusing 'Sign in with iPhone' / hardware passkey options that fail on Linux */
+button[data-component-name*="iphone" i],
+button[data-component-name*="cross-device" i],
+button[data-testid*="passkey" i],
+button[data-testid*="iphone" i],
+button[aria-label*="iPhone" i],
+button[aria-label*="passkey" i],
+[class*="passkey-option" i],
+[class*="iphone-signin" i] {
+  display: none !important;
+}

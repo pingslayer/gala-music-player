@@ -50,7 +50,7 @@ function createWindow() {
     console.error(`[Process Error] Renderer process gone: reason=${details.reason}, exitCode=${details.exitCode}`);
   });
 
-  // Inject hook script when page finishes loading
+  // Inject hook script and auth styling fixes
   mainWindow.webContents.on('did-finish-load', () => {
     const hookPath = path.join(__dirname, '../preload/hook.js');
     if (fs.existsSync(hookPath)) {
@@ -58,6 +58,15 @@ function createWindow() {
       mainWindow.webContents.executeJavaScript(hookCode).catch((err) => {
         console.error('[Hook] Failed to inject hook script:', err);
       });
+    }
+  });
+
+  // Ensure Apple ID login iframe has high-contrast readable text on Linux
+  mainWindow.webContents.on('did-frame-finish-load', (_event, isMainFrame, frameProcessId, frameRoutingId) => {
+    const authCssPath = path.join(__dirname, '../preload/authStyleFix.css');
+    if (fs.existsSync(authCssPath)) {
+      const authCss = fs.readFileSync(authCssPath, 'utf8');
+      mainWindow.webContents.insertCSS(authCss).catch(() => {});
     }
   });
 
