@@ -28,6 +28,7 @@
     "directories": {
       "output": "dist"
     },
+    "npmRebuild": false,
     "electronDownload": {
       "mirror": "https://github.com/castlabs/electron-releases/releases/download/v"
     },
