@@ -70,6 +70,15 @@
     const mk = window.MusicKit && window.MusicKit.getInstance ? window.MusicKit.getInstance() : null;
     const audioEl = document.querySelector('audio');
 
+    const clickButton = (keywords) => {
+      const btns = Array.from(document.querySelectorAll('button'));
+      const target = btns.find(b => {
+        const str = [b.getAttribute('aria-label'), b.getAttribute('title'), b.getAttribute('data-testid'), b.className].join(' ').toLowerCase();
+        return keywords.some(kw => str.includes(kw));
+      });
+      if (target) target.click();
+    };
+
     switch (command) {
       case 'play':
         if (mk) mk.play();
@@ -93,8 +102,7 @@
         if (mk) {
           mk.skipToNextItem();
         } else {
-          const nextBtn = document.querySelector('button[aria-label*="Next"], button[data-testid*="next"]');
-          if (nextBtn) nextBtn.click();
+          clickButton(['next', 'forward', 'skip']);
         }
         break;
 
@@ -102,8 +110,7 @@
         if (mk) {
           mk.skipToPreviousItem();
         } else {
-          const prevBtn = document.querySelector('button[aria-label*="Previous"], button[data-testid*="previous"]');
-          if (prevBtn) prevBtn.click();
+          clickButton(['previous', 'prev', 'back']);
         }
         break;
 

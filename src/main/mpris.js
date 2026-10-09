@@ -14,7 +14,8 @@ class MprisManager {
         identity: 'Gala Music Player',
         supportedUriSchemes: ['https'],
         supportedMimeTypes: ['audio/mpeg', 'audio/aac'],
-        supportedInterfaces: ['player']
+        supportedInterfaces: ['player'],
+        desktopEntry: 'gala-music-player'
       });
 
       this.setupHandlers();
