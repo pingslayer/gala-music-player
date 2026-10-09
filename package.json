@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "An ultra-robust, native Apple Music client for Linux powered by CastLabs Electron.",
   "main": "src/main/index.js",
-  "author": "Ronald",
+  "author": "Ronald <ronaldprajval7@gmail.com>",
   "homepage": "https://github.com/pingslayer/gala-music-player",
   "repository": {
     "type": "git",
@@ -29,12 +29,11 @@
       "output": "dist"
     },
     "electronDownload": {
-      "mirror": "https://github.com/castlabs/electron-releases/releases/download/"
+      "mirror": "https://github.com/castlabs/electron-releases/releases/download/v"
     },
     "linux": {
       "target": [
-        "AppImage",
-        "deb"
+        "AppImage"
       ],
       "category": "Audio",
       "executableName": "gala-music-player",
