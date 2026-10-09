@@ -30,7 +30,9 @@ jobs:
         run: npm ci
 
       - name: Build Linux Distributables (RPM, DEB, AppImage)
-        run: npm run dist
+        run: npm run dist -- --publish never
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
