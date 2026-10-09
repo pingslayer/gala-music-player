@@ -33,6 +33,8 @@
     },
     "linux": {
       "target": [
+        "rpm",
+        "deb",
         "AppImage"
       ],
       "category": "Audio",
