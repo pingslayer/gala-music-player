@@ -11,10 +11,11 @@ An ultra-robust, native Apple Music client for Linux powered by CastLabs Electro
 ## Highlights
 
 - 🎧 **Untouched Lossless Audio:** Directly streams Apple Music through CastLabs Electron with production-signed Widevine CDM support. No audio stream interception, no custom Web Audio filters, and no playback errors.
-- 🐧 **Native Linux Integration:** Full MPRIS v2 compliance (`org.mpris.MediaPlayer2.gala`). Seamlessly integrates with GNOME Shell, KDE Plasma, Hyprland, `playerctl`, and desktop lock screens.
+- 🐧 **Native Linux Integration:** Full MPRIS v2 compliance (`org.mpris.MediaPlayer2.gala`) complete with `desktopEntry` binding for seamless window raising. Integrates flawlessly with GNOME Shell, KDE Plasma, Hyprland, `playerctl`, and desktop lock screens.
+- 🤖 **Bulletproof Media Hooks:** Utilizes robust polling and caching of Apple's internal `MusicKit` API to ensure track skipping and media controls never fail or crash due to background re-initializations.
 - 🛡️ **Hardened & Secure:** Features automatic Single Sign-On (SSO) session destruction on sign-out, strict `contextIsolation`, and zero third-party telemetry.
-- ⚡ **Single Authoritative Player:** Disables Chromium's generic media session to eliminate duplicate notifications in desktop trays.
-- ⬇️ **Background Playback:** Runs smoothly in the background when closed to tray without audio interruptions or tab throttling.
+- ⚡ **Single Authoritative Player:** Disables Chromium's generic media session and enforces Single Instance Locking to eliminate duplicate processes and notifications.
+- 🛑 **Clean Desktop Lifecycle:** Fully conforms to standard Linux application paradigms. Bypasses web `beforeunload` dialogs for immediate exit on close, automatically severing D-Bus sockets to instantly clear system notifications.
 - 🖱️ **Dock Quick Actions:** Right-click the application icon in your desktop dock to quickly trigger Play/Pause, Next Track, and Previous Track.
 
 ---
@@ -50,7 +51,7 @@ npm start
 ```
 
 ### Packaging for Linux
-Generate standalone `.AppImage` and `.deb` distribution packages:
+Generate standalone `.AppImage`, `.deb`, and `.rpm` distribution packages:
 ```bash
 npm run dist
 ```
