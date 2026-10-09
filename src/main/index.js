@@ -105,20 +105,16 @@ function createWindow() {
   // Load official Apple Music web player
   mainWindow.loadURL('https://music.apple.com');
 
-  // Window close button ('X') acts as the definitive kill switch:
-  // Immediately destroys MPRIS/D-Bus connection, stops playback, and quits app
+  // Window close button ('X'): allow natural window teardown
   mainWindow.on('close', () => {
     isQuitting = true;
-    if (mprisManager) {
-      mprisManager.destroy();
-    }
-    app.quit();
   });
 
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
 }
+
 
 
 
@@ -229,9 +225,6 @@ app.whenReady().then(async () => {
 
 app.on('before-quit', () => {
   isQuitting = true;
-  if (mprisManager) {
-    mprisManager.destroy();
-  }
 });
 
 app.on('will-quit', () => {
@@ -246,4 +239,6 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
+
+
 

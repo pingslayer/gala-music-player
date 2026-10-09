@@ -103,8 +103,6 @@ class MprisManager {
   destroy() {
     if (this.player) {
       try {
-        this.player.playbackStatus = 'Stopped';
-        this.player.metadata = {};
         if (this.player.bus && this.player.bus.connection) {
           this.player.bus.connection.end();
         }
@@ -114,6 +112,7 @@ class MprisManager {
       this.player = null;
     }
   }
+
 }
 
 
