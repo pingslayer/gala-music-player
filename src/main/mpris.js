@@ -104,7 +104,10 @@ class MprisManager {
     if (this.player) {
       try {
         this.player.playbackStatus = 'Stopped';
-        this.player.metadata = { 'xesam:title': '' };
+        this.player.metadata = {};
+        if (this.player.bus && this.player.bus.connection) {
+          this.player.bus.connection.end();
+        }
       } catch (err) {
         // Ignore if player is already disposed
       }
@@ -112,6 +115,7 @@ class MprisManager {
     }
   }
 }
+
 
 
 module.exports = MprisManager;

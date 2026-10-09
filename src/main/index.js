@@ -105,11 +105,20 @@ function createWindow() {
   // Load official Apple Music web player
   mainWindow.loadURL('https://music.apple.com');
 
-  // Handle Close-to-Tray
-  mainWindow.on('close', (event) => {
-    if (!isQuitting) {
-      event.preventDefault();
-      mainWindow.hide();
+  // Global Ctrl+Q keyboard shortcut for instantaneous clean exit
+  mainWindow.webContents.on('before-input-event', (_event, input) => {
+    if (input.control && input.key.toLowerCase() === 'q') {
+      isQuitting = true;
+      if (mprisManager) mprisManager.destroy();
+      app.quit();
+    }
+  });
+
+  // Handle window close: cleanly terminate app and remove notification
+  mainWindow.on('close', () => {
+    isQuitting = true;
+    if (mprisManager) {
+      mprisManager.destroy();
     }
   });
 
@@ -117,6 +126,7 @@ function createWindow() {
     mainWindow = null;
   });
 }
+
 
 function createTray() {
   try {
@@ -225,6 +235,9 @@ app.whenReady().then(async () => {
 
 app.on('before-quit', () => {
   isQuitting = true;
+  if (mprisManager) {
+    mprisManager.destroy();
+  }
 });
 
 app.on('will-quit', () => {
@@ -235,7 +248,8 @@ app.on('will-quit', () => {
 });
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin' && isQuitting) {
+  if (process.platform !== 'darwin') {
     app.quit();
   }
 });
+
