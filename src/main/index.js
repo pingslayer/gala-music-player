@@ -100,7 +100,11 @@ function createWindow() {
     }
   );
 
-
+  // Bypass Apple Music's silent 'beforeunload' event that blocks window closing
+  mainWindow.webContents.on('will-prevent-unload', (event) => {
+    console.log('[App] Bypassing Apple Music beforeunload dialog.');
+    event.preventDefault(); 
+  });
 
   // Load official Apple Music web player
   mainWindow.loadURL('https://music.apple.com');
