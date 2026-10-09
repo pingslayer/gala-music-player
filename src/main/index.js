@@ -105,27 +105,21 @@ function createWindow() {
   // Load official Apple Music web player
   mainWindow.loadURL('https://music.apple.com');
 
-  // Global Ctrl+Q keyboard shortcut for instantaneous clean exit
-  mainWindow.webContents.on('before-input-event', (_event, input) => {
-    if (input.control && input.key.toLowerCase() === 'q') {
-      isQuitting = true;
-      if (mprisManager) mprisManager.destroy();
-      app.quit();
-    }
-  });
-
-  // Handle window close: cleanly terminate app and remove notification
+  // Window close button ('X') acts as the definitive kill switch:
+  // Immediately destroys MPRIS/D-Bus connection, stops playback, and quits app
   mainWindow.on('close', () => {
     isQuitting = true;
     if (mprisManager) {
       mprisManager.destroy();
     }
+    app.quit();
   });
 
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
 }
+
 
 
 function createTray() {
