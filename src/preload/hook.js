@@ -66,59 +66,55 @@
 
   // 2. Handle Inbound MPRIS media commands from Electron Main
   window.__galaBridge.onMediaCommand((command, payload) => {
+    // Attempt to use Apple's native MusicKit for bulletproof media control
+    const mk = window.MusicKit && window.MusicKit.getInstance ? window.MusicKit.getInstance() : null;
     const audioEl = document.querySelector('audio');
 
     switch (command) {
       case 'play':
-        if (audioEl) audioEl.play().catch(() => {});
-        simulateMediaSessionAction('play');
+        if (mk) mk.play();
+        else if (audioEl) audioEl.play().catch(() => {});
         break;
 
       case 'pause':
-        if (audioEl) audioEl.pause();
-        simulateMediaSessionAction('pause');
+        if (mk) mk.pause();
+        else if (audioEl) audioEl.pause();
         break;
 
       case 'play-pause':
-        if (audioEl) {
-          if (audioEl.paused) {
-            audioEl.play().catch(() => {});
-            simulateMediaSessionAction('play');
-          } else {
-            audioEl.pause();
-            simulateMediaSessionAction('pause');
-          }
+        if (mk) {
+          mk.isPlaying ? mk.pause() : mk.play();
+        } else if (audioEl) {
+          audioEl.paused ? audioEl.play().catch(() => {}) : audioEl.pause();
         }
         break;
 
       case 'next':
-        simulateMediaSessionAction('nexttrack');
+        if (mk) {
+          mk.skipToNextItem();
+        } else {
+          const nextBtn = document.querySelector('button[aria-label*="Next"], button[data-testid*="next"]');
+          if (nextBtn) nextBtn.click();
+        }
         break;
 
       case 'previous':
-        simulateMediaSessionAction('previoustrack');
+        if (mk) {
+          mk.skipToPreviousItem();
+        } else {
+          const prevBtn = document.querySelector('button[aria-label*="Previous"], button[data-testid*="previous"]');
+          if (prevBtn) prevBtn.click();
+        }
         break;
 
       case 'seek':
-        if (audioEl && typeof payload === 'number') {
-          audioEl.currentTime = payload / 1000;
-          simulateMediaSessionAction('seekto', { seekTime: payload / 1000 });
+        const targetSecs = typeof payload === 'number' ? payload / 1000 : 0;
+        if (mk) {
+          mk.seekToTime(targetSecs);
+        } else if (audioEl) {
+          audioEl.currentTime = targetSecs;
         }
         break;
     }
   });
-
-  // Helper to trigger actions registered by Apple Music on navigator.mediaSession
-  function simulateMediaSessionAction(actionName, details) {
-    if (!navigator.mediaSession) return;
-    try {
-      // In Chromium, standard action handler trigger
-      const handler = navigator.mediaSession._actions && navigator.mediaSession._actions[actionName];
-      if (typeof handler === 'function') {
-        handler(details || { action: actionName });
-      }
-    } catch (_) {
-      // Best-effort execution
-    }
-  }
 })();

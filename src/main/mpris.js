@@ -55,6 +55,14 @@ class MprisManager {
         this.mainWindow.destroy();
       }
     });
+
+    this.player.on('raise', () => {
+      if (this.mainWindow) {
+        if (this.mainWindow.isMinimized()) this.mainWindow.restore();
+        if (!this.mainWindow.isVisible()) this.mainWindow.show();
+        this.mainWindow.focus();
+      }
+    });
   }
 
   sendCommand(command, payload) {
@@ -94,9 +102,16 @@ class MprisManager {
 
   destroy() {
     if (this.player) {
+      try {
+        this.player.playbackStatus = 'Stopped';
+        this.player.metadata = { 'xesam:title': '' };
+      } catch (err) {
+        // Ignore if player is already disposed
+      }
       this.player = null;
     }
   }
 }
+
 
 module.exports = MprisManager;
