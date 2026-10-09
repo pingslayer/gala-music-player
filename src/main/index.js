@@ -22,6 +22,7 @@ function createWindow() {
     minWidth: 800,
     minHeight: 600,
     title: 'Gala Music Player',
+    icon: path.join(__dirname, '../../assets/icon.png'),
     backgroundColor: '#121212',
     show: false, // Show when ready to prevent white/blank flicker
     webPreferences: {
