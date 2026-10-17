@@ -13,10 +13,8 @@ app.userAgentFallback = cleanUA;
 app.commandLine.appendSwitch('disable-dev-shm-usage');
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 
-// Force GPU rasterization and zero-copy canvas for smooth animations and low CPU usage
-app.commandLine.appendSwitch('enable-gpu-rasterization');
-app.commandLine.appendSwitch('enable-zero-copy');
-app.commandLine.appendSwitch('ignore-gpu-blocklist');
+// Provide sufficient audio buffer depth to prevent underruns during CPU spikes
+app.commandLine.appendSwitch('audio-buffer-size', '2048');
 
 // Linux platform features:
 // - AudioServiceOutOfProcess off: Keeps audio processing in-process, preventing audio dropouts/stutters when UI animations spike CPU
@@ -60,6 +58,8 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: true,
+      spellcheck: false,
+      backgroundThrottling: false,
       plugins: true, // Required for Widevine CDM
       preload: path.join(__dirname, '../preload/preload.js')
     }
@@ -84,7 +84,7 @@ function createWindow() {
     console.error(`[Process Error] Renderer process gone: reason=${details.reason}, exitCode=${details.exitCode}`);
   });
 
-  // Inject hook script and auth styling fixes
+  // Inject hook script
   mainWindow.webContents.on('did-finish-load', () => {
     const hookPath = path.join(__dirname, '../preload/hook.js');
     if (fs.existsSync(hookPath)) {
