@@ -1,7 +1,12 @@
-const { app, BrowserWindow, components, ipcMain, globalShortcut, Menu, Tray } = require('electron');
+const { app, BrowserWindow, components, ipcMain, globalShortcut, Menu, Tray, session } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const MprisManager = require('./mpris');
+
+// Configure clean Chrome User-Agent to prevent Apple Music from serving degraded or incompatible web bundles
+const chromeVersion = `${process.versions.chrome.split('.')[0]}.0.0.0`;
+const cleanUA = `Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${chromeVersion} Safari/537.36`;
+app.userAgentFallback = cleanUA;
 
 // 1. Configure Linux shared memory & media flags
 // Critical on Fedora/Linux to prevent /dev/shm shared memory crashes
@@ -85,7 +90,6 @@ function createWindow() {
   // When the user clicks "Sign Out" in the Apple Music web UI, the frontend sends a logout API request.
   // We intercept that request to securely nuke the entire Electron session (cookies, local storage, etc.)
   // and reload the page, ensuring no SSO cookies are left behind.
-  const { session } = require('electron');
   session.defaultSession.webRequest.onCompleted(
     { urls: ['*://*.apple.com/*logout*', '*://*.apple.com/*signout*'] },
     async (details) => {
@@ -194,15 +198,32 @@ ipcMain.on('gala:position-update', (_event, position) => {
 
 // App lifecycle
 app.whenReady().then(async () => {
-  // Ensure CastLabs Widevine CDM component is ready
+  // Ensure CastLabs Widevine CDM component is ready and flush stale service worker/cache
+  // (Preserves cookies and login credentials while preventing stale bundle deadlocks)
+  const initTasks = [];
+
   if (components && typeof components.whenReady === 'function') {
-    try {
-      await components.whenReady();
-      console.log('[DRM] CastLabs Widevine CDM initialized.');
-    } catch (cdmErr) {
-      console.warn('[DRM] Widevine CDM initialization warning:', cdmErr.message);
-    }
+    initTasks.push(
+      components.whenReady().then(() => {
+        console.log('[DRM] CastLabs Widevine CDM initialized.');
+      }).catch((cdmErr) => {
+        console.warn('[DRM] Widevine CDM initialization warning:', cdmErr.message);
+      })
+    );
   }
+
+  initTasks.push(
+    session.defaultSession.clearData({
+      dataTypes: ['serviceWorkers', 'cache'],
+      origins: ['https://music.apple.com']
+    }).then(() => {
+      console.log('[Cache] Stale service workers and cache purged on startup.');
+    }).catch((cacheErr) => {
+      console.warn('[Cache] Could not purge startup cache:', cacheErr.message);
+    })
+  );
+
+  await Promise.all(initTasks);
 
   createWindow();
   createTray();

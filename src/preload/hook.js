@@ -64,60 +64,56 @@
   // Poll state smoothly every 500ms (minimal CPU overhead)
   setInterval(checkMediaSession, 500);
 
-  // 2. Handle Inbound MPRIS media commands from Electron Main
-  window.__galaBridge.onMediaCommand((command, payload) => {
-    // Attempt to use Apple's native MusicKit for bulletproof media control
-    const mk = window.MusicKit && window.MusicKit.getInstance ? window.MusicKit.getInstance() : null;
-    const audioEl = document.querySelector('audio');
+  // 2. Poll for MusicKit instance safely (avoiding re-initialization throws like Sidra does)
+  let cachedMk = null;
+  setInterval(() => {
+    if (!window.MusicKit || typeof window.MusicKit.getInstance !== 'function') return;
+    try {
+      const mk = window.MusicKit.getInstance();
+      if (mk && mk !== cachedMk) {
+        cachedMk = mk;
+      }
+    } catch (_) {
+      // Apple Music routinely destroys and re-initializes MusicKit during navigation.
+      // getInstance() throws during this phase. Catch and ignore until engine is stable.
+    }
+  }, 500);
 
-    const clickButton = (keywords) => {
-      const btns = Array.from(document.querySelectorAll('button'));
-      const target = btns.find(b => {
-        const str = [b.getAttribute('aria-label'), b.getAttribute('title'), b.getAttribute('data-testid'), b.className].join(' ').toLowerCase();
-        return keywords.some(kw => str.includes(kw));
-      });
-      if (target) target.click();
-    };
+  // 3. Handle Inbound MPRIS media commands from Electron Main
+  window.__galaBridge.onMediaCommand((command, payload) => {
+    const audioEl = document.querySelector('audio');
 
     switch (command) {
       case 'play':
-        if (mk) mk.play();
+        if (cachedMk) cachedMk.play();
         else if (audioEl) audioEl.play().catch(() => {});
         break;
 
       case 'pause':
-        if (mk) mk.pause();
+        if (cachedMk) cachedMk.pause();
         else if (audioEl) audioEl.pause();
         break;
 
       case 'play-pause':
-        if (mk) {
-          mk.isPlaying ? mk.pause() : mk.play();
+        if (cachedMk) {
+          cachedMk.isPlaying ? cachedMk.pause() : cachedMk.play();
         } else if (audioEl) {
           audioEl.paused ? audioEl.play().catch(() => {}) : audioEl.pause();
         }
         break;
 
       case 'next':
-        if (mk) {
-          mk.skipToNextItem();
-        } else {
-          clickButton(['next', 'forward', 'skip']);
-        }
+        if (cachedMk) cachedMk.skipToNextItem();
         break;
 
       case 'previous':
-        if (mk) {
-          mk.skipToPreviousItem();
-        } else {
-          clickButton(['previous', 'prev', 'back']);
-        }
+        if (cachedMk) cachedMk.skipToPreviousItem();
         break;
 
       case 'seek':
         const targetSecs = typeof payload === 'number' ? payload / 1000 : 0;
-        if (mk) {
-          mk.seekToTime(targetSecs);
+        if (cachedMk) {
+          cachedMk.seekToTime(targetSecs);
         } else if (audioEl) {
           audioEl.currentTime = targetSecs;
         }
