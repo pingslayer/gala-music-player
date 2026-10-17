@@ -10,6 +10,7 @@
 
   let lastTrackId = null;
   let lastPlaybackState = null;
+  let lastPositionReportTime = 0;
 
   // 1. Observe MediaSession metadata updates
   function checkMediaSession() {
@@ -28,9 +29,9 @@
     if (trackId !== lastTrackId && title.length > 0) {
       lastTrackId = trackId;
 
-      // Extract duration if an audio element is active
+      // Extract duration if an audio element is active and has a finite duration
       const audioEl = document.querySelector('audio');
-      const duration = audioEl && !isNaN(audioEl.duration) ? audioEl.duration : 0;
+      const duration = audioEl && Number.isFinite(audioEl.duration) && audioEl.duration > 0 ? audioEl.duration : 0;
 
       window.__galaBridge.sendTrackUpdate({
         title,
@@ -56,7 +57,10 @@
       window.__galaBridge.sendPlaybackState(currentState);
     }
 
-    if (audioEl && isPlaying) {
+    // Report position every 2 seconds to avoid flooding IPC during heavy canvas/lyrics rendering
+    const now = Date.now();
+    if (audioEl && isPlaying && now - lastPositionReportTime >= 2000) {
+      lastPositionReportTime = now;
       window.__galaBridge.sendPositionUpdate(Math.round(audioEl.currentTime * 1000));
     }
   }

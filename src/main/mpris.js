@@ -82,23 +82,35 @@ class MprisManager {
       'mpris:artUrl': metadata.artwork || ''
     };
 
-    if (metadata.duration && metadata.duration > 0) {
+    if (metadata.duration && Number.isFinite(metadata.duration) && metadata.duration > 0) {
       // MPRIS duration is in microseconds
       mprisMetadata['mpris:length'] = Math.round(metadata.duration * 1000);
     }
 
-    this.player.metadata = mprisMetadata;
+    try {
+      this.player.metadata = mprisMetadata;
+    } catch (err) {
+      console.warn('[MPRIS] Failed to update metadata:', err.message);
+    }
   }
 
   updatePlaybackState(state) {
     if (!this.player) return;
-    this.player.playbackStatus = state; // 'Playing', 'Paused', or 'Stopped'
+    try {
+      this.player.playbackStatus = state; // 'Playing', 'Paused', or 'Stopped'
+    } catch (err) {
+      console.warn('[MPRIS] Failed to update playback state:', err.message);
+    }
   }
 
   updatePosition(positionMs) {
-    if (!this.player) return;
-    // MPRIS position is in microseconds
-    this.player.position = Math.round(positionMs * 1000);
+    if (!this.player || !Number.isFinite(positionMs) || positionMs < 0) return;
+    try {
+      // MPRIS position is in microseconds
+      this.player.position = Math.round(positionMs * 1000);
+    } catch (err) {
+      console.warn('[MPRIS] Failed to update position:', err.message);
+    }
   }
 
   destroy() {

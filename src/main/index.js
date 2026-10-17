@@ -8,12 +8,21 @@ const chromeVersion = `${process.versions.chrome.split('.')[0]}.0.0.0`;
 const cleanUA = `Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${chromeVersion} Safari/537.36`;
 app.userAgentFallback = cleanUA;
 
-// 1. Configure Linux shared memory & media flags
+// 1. Configure Linux shared memory, GPU acceleration, and audio pipeline flags
 // Critical on Fedora/Linux to prevent /dev/shm shared memory crashes
 app.commandLine.appendSwitch('disable-dev-shm-usage');
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
-// Disable Chromium's internal Linux MPRIS/MediaKeys to prevent duplicate notifications in GNOME/Fedora
-app.commandLine.appendSwitch('disable-features', 'HardwareMediaKeyHandling,MediaSessionService');
+
+// Force GPU rasterization and zero-copy canvas for smooth animations and low CPU usage
+app.commandLine.appendSwitch('enable-gpu-rasterization');
+app.commandLine.appendSwitch('enable-zero-copy');
+app.commandLine.appendSwitch('ignore-gpu-blocklist');
+
+// Linux platform features:
+// - AudioServiceOutOfProcess off: Keeps audio processing in-process, preventing audio dropouts/stutters when UI animations spike CPU
+// - WaylandWpColorManagerV1 off: Prevents surface synchronization stalls and frame drops under GNOME Wayland
+// - MediaSessionService & HardwareMediaKeyHandling off: Prevents duplicate MPRIS registrations
+app.commandLine.appendSwitch('disable-features', 'HardwareMediaKeyHandling,MediaSessionService,WaylandWpColorManagerV1,AudioServiceOutOfProcess');
 
 let mainWindow = null;
 let mprisManager = null;

@@ -11,8 +11,10 @@ An ultra-robust, native Apple Music client for Linux powered by CastLabs Electro
 ## Highlights
 
 - 🎧 **Untouched Lossless Audio:** Directly streams Apple Music through CastLabs Electron with production-signed Widevine CDM support. No audio stream interception, no custom Web Audio filters, and no playback errors.
+- 🚀 **Hardware-Accelerated & Stutter-Free:** Operates audio in-process with forced GPU rasterization and zero-copy compositing. Keeps playback completely free of audio dropouts and stutter even during intensive full-screen synchronized lyrics and dynamic blur animations.
 - 🐧 **Native Linux Integration:** Full MPRIS v2 compliance (`org.mpris.MediaPlayer2.gala`) complete with `desktopEntry` binding for seamless window raising. Integrates flawlessly with GNOME Shell, KDE Plasma, Hyprland, `playerctl`, and desktop lock screens.
 - 🤖 **Bulletproof Media Hooks:** Utilizes robust polling and caching of Apple's internal `MusicKit` API to ensure track skipping and media controls never fail or crash due to background re-initializations.
+- 🛡️ **Type-Safe D-Bus Marshaling:** Strictly validates track durations and playback positions with finite number guards, eliminating BigInt marshalling exceptions during initial stream buffering.
 - 🔄 **Stale Cache Resilience:** Automatically flushes obsolete service workers and HTTP caches on startup while safely preserving authentication cookies and user settings, preventing loading deadlocks caused by stale web bundles after extended periods of inactivity.
 - 🌐 **Clean Browser Identity:** Spoofs a clean Chrome Linux User-Agent to ensure Apple Music delivers fully supported, production web bundles without Electron-specific degradation.
 - 🛡️ **Hardened & Secure:** Features automatic Single Sign-On (SSO) session destruction on sign-out, strict `contextIsolation`, and zero third-party telemetry.
