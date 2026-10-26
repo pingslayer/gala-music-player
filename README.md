@@ -1,6 +1,8 @@
 # Gala Music Player
 
-An ultra-robust, native Apple Music client for Linux powered by CastLabs Electron.
+Gala is a desktop Apple Music client built for Linux, designed to integrate cleanly with modern desktop environments like GNOME, KDE Plasma, and Hyprland.
+
+It is powered by CastLabs Electron with verified Widevine DRM support, allowing Apple Music to stream smoothly without playback errors or broken sessions.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Platform: Linux](https://img.shields.io/badge/Platform-Linux-orange.svg)](#)
@@ -8,40 +10,27 @@ An ultra-robust, native Apple Music client for Linux powered by CastLabs Electro
 
 ---
 
-## Highlights
+## Features
 
-- 🎧 **Untouched Lossless Audio:** Directly streams Apple Music through CastLabs Electron with production-signed Widevine CDM support. No audio stream interception, no custom Web Audio filters, and no playback errors.
-- 🚀 **Optimized Audio & Wayland Stability:** Operates audio in-process (`AudioServiceOutOfProcess` disabled) with dedicated buffer depth (`audio-buffer-size: 2048`) to eliminate audio dropouts and pops under heavy UI loads. Fully compatible with native Wayland compositors (GNOME, KDE Plasma, Hyprland) using stable OpenGL acceleration without driver conflicts.
-- 🐧 **Native Linux Integration:** Full MPRIS v2 compliance (`org.mpris.MediaPlayer2.gala`) complete with `desktopEntry` binding for seamless window raising. Integrates flawlessly with GNOME Shell, KDE Plasma, Hyprland, `playerctl`, and desktop lock screens.
-- 🤖 **Bulletproof Media Hooks:** Utilizes robust polling and caching of Apple's internal `MusicKit` API to ensure track skipping and media controls never fail or crash due to background re-initializations.
-- 🛡️ **Type-Safe D-Bus Marshaling:** Strictly validates track durations and playback positions with finite number guards, eliminating BigInt marshalling exceptions during initial stream buffering.
-- 🔄 **Stale Cache Resilience:** Automatically flushes obsolete service workers and HTTP caches on startup while safely preserving authentication cookies and user settings, preventing loading deadlocks caused by stale web bundles after extended periods of inactivity.
-- 🌐 **Clean Browser Identity:** Spoofs a clean Chrome Linux User-Agent to ensure Apple Music delivers fully supported, production web bundles without Electron-specific degradation.
-- 🛡️ **Hardened & Secure:** Features automatic Single Sign-On (SSO) session destruction on sign-out, strict `contextIsolation`, and zero third-party telemetry.
-- ⚡ **Single Authoritative Player:** Disables Chromium's generic media session and enforces Single Instance Locking to eliminate duplicate processes and notifications.
-- 🛑 **Clean Desktop Lifecycle:** Fully conforms to standard Linux application paradigms. Bypasses web `beforeunload` dialogs for immediate exit on close, automatically severing D-Bus sockets to instantly clear system notifications.
-- 🖱️ **Dock Quick Actions:** Right-click the application icon in your desktop dock to quickly trigger Play/Pause, Next Track, and Previous Track.
-
----
-
-## Documentation (SDLC Standards)
-
-For detailed technical and architectural specifications, consult our documentation:
-
-- 📐 **[System Architecture](docs/ARCHITECTURE.md)**: Deep dive into process isolation, Widevine CDM initialization, shared memory management, and D-Bus specifications.
-- 🔒 **[Security Policy](docs/SECURITY.md)**: Authentication lifecycle, SSO cookie destruction, IPC bridge security, and sandbox integrity.
-- 🧪 **[Testing & Verification Guide](docs/TESTING.md)**: Step-by-step procedures for DRM validation, `playerctl` D-Bus tests, and automated checks.
+- **Reliable Playback:** Uses signed Widevine DRM so Apple Music streams properly without playback errors, audio manipulation, or stream interruptions.
+- **Desktop Media Integration:** Fully supports the standard Linux MPRIS v2 specification (`org.mpris.MediaPlayer2.gala`). Hardware media keys, lock screen widgets, top bar controls, and desktop notifications work out of the box.
+- **Wayland and Hardware Acceleration:** Tuned for smooth graphics and stable audio buffering across Wayland and X11 compositors.
+- **Dock Quick Actions:** Right-click the app icon in your desktop dock to play, pause, or skip tracks.
+- **Smart Cache Management:** Automatically clears outdated web caches and service workers on launch to avoid stuck loading screens while keeping your login session intact.
+- **Private and Lightweight:** Runs with strict context isolation, properly clears session cookies on sign-out, and includes zero tracking or telemetry.
 
 ---
 
 ## Getting Started
 
 ### Prerequisites
-- Node.js (v18+)
-- npm
-- Linux Desktop Environment (GNOME, KDE Plasma, XFCE, Sway, Hyprland, etc.)
 
-### Installation & Development
+- Node.js (v18 or higher)
+- npm
+- Linux desktop environment (GNOME, KDE Plasma, XFCE, Sway, Hyprland, etc.)
+
+### Run from Source
+
 ```bash
 # Clone the repository
 git clone https://github.com/pingslayer/gala-music-player.git
@@ -50,40 +39,54 @@ cd gala-music-player
 # Install dependencies
 npm install
 
-# Launch Gala in development mode
+# Start the application
 npm start
 ```
 
-### Packaging for Linux
-Generate standalone `.AppImage`, `.deb`, and `.rpm` distribution packages:
+### Build Packages (RPM, DEB, AppImage)
+
+To generate standalone Linux packages:
+
 ```bash
 npm run dist
 ```
-The packaged binaries will be output to the `dist/` directory.
+
+Packaged binaries will be saved in the `dist/` folder.
 
 ---
 
-## CLI Media Control (`playerctl`)
+## Command Line Control
 
-Because Gala implements the standard MPRIS v2 specification under the static bus name `gala`, you can easily script or bind it to custom hotkeys:
+Because Gala registers with MPRIS, you can inspect playback or control it using `playerctl`:
 
 ```bash
-# Toggle Playback
+# Toggle playback
 playerctl --player=gala play-pause
 
-# Skip Track
+# Skip to next or previous track
 playerctl --player=gala next
-
-# Previous Track
 playerctl --player=gala previous
 
-# View Current Track Metadata
+# Show current track information
 playerctl --player=gala metadata
 ```
+
+You can also bind these commands to custom shortcuts in your window manager (such as Hyprland, Sway, or i3).
+
+---
+
+## Documentation
+
+For technical and architectural details:
+
+- [System Architecture](docs/ARCHITECTURE.md): Process isolation, audio pipelines, and D-Bus integration.
+- [Security Policy](docs/SECURITY.md): Session management, IPC communication, and cookie handling.
+- [Testing Guide](docs/TESTING.md): Verification steps for DRM, MPRIS signals, and build validation.
 
 ---
 
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
-Apple Music is a trademark of Apple Inc. Gala is an independent open-source project and is not affiliated with or endorsed by Apple Inc.
+
+Disclaimer: Gala is an independent open-source project and is not affiliated with, sponsored by, or endorsed by Apple Inc. Apple Music is a trademark of Apple Inc.
